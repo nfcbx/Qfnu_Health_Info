@@ -1,8 +1,13 @@
 import requests
+import time
 
-def login():
+payload = [
+    "{\"username\":\"这里填学号\",\"password\":\"这里填密码\",\"type\":\"student\"}",
+    "{\"username\":\"这里填学号\",\"password\":\"这里填密码\",\"type\":\"student\"}",
+    "{\"username\":\"这里填学号\",\"password\":\"这里填密码\",\"type\":\"student\"}"]
+
+def login(payload):
     url = "http://xuegong.qfnu.edu.cn:8080/authentication/login"
-    payload = "{\"username\":\"这里填写学号\",\"password\":\"这里填写密码\",\"type\":\"student\"}"
     headers = {
         'user-agent': 'Dart/2.13 (dart:io)',
         'content-type': 'application/json; charset=utf-8',
@@ -11,11 +16,8 @@ def login():
         'host': 'xuegong.qfnu.edu.cn:8080'
     }
     response = requests.request("POST", url, headers=headers, data=payload)
-    print(response.text)
     return response
 
-cookie = login().text.split('\"', 20)[5]
-print(cookie)
 
 def save(cookie):
     url = "http://xuegong.qfnu.edu.cn:8080/student/healthInfo/save"
@@ -31,6 +33,45 @@ def save(cookie):
     }
     headers['cookie'] = 'syt.sessionId=' + cookie
     response = requests.request("POST", url, headers=headers, data=payload)
-    print(response.text)
+    return response
 
-save(cookie=cookie)
+for i in payload:
+
+    print("当前用户：" + i)
+
+    login_text = login(i).text.split('\"')
+
+    login_status = login_text[10]
+
+    cookie = login_text[5]
+
+    if(login_status == ':200,'):
+        print("登陆成功！开始签到", end=" ")
+        for _i in range(5):
+            print("..", end="")
+
+        response_text = save(cookie=cookie).text.split('\"')
+
+        response_code = response_text[8]
+        response_message = response_text[11]
+        if(response_code == ":400,") :
+            print(response_message)
+        else :
+            print(response_message , "*********")
+        time.sleep(5)
+
+
+        ###Debug
+        print("-----login------")
+        for k in range(len(login_text)) :
+            print(login_text[k], end="") 
+        print("\n-----response-----")
+        for n in range(len(response_text)) :
+            print(response_text[n], end="")
+        print("\n\n")
+    else:
+        print("登录失败！", end="")
+        login_message = login_text[11]
+        print(login_message)
+        time.sleep(10)
+        continue
