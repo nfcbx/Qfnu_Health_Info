@@ -52,12 +52,9 @@ for i in payload:
 
         response_text = save(cookie=cookie).text.split('\"')
 
-        response_code = response_text[8]
         response_message = response_text[11]
-        if(response_code == ":400,") :
-            print(response_message)
-        else :
-            print(response_message , "*********")
+
+        print(response_message)
         time.sleep(5)
 
 
